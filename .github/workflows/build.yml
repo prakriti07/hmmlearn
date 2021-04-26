@@ -82,19 +82,32 @@ jobs:
           source .env/bin/activate && \
           python -m pytest --cov --cov-branch --cov-report=xml && \
           deactivate'
+  build_aarch64_wheel:
+    name: "Build on ${{ matrix.pyver }} aarch64"
+    strategy:
+      matrix:
+        pyver: [cp35-cp35m, cp36-cp36m, cp37-cp37m, cp38-cp38, cp39-cp39]
+        arch: [aarch64]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    env:
+      py: /opt/python/${{ matrix.pyver }}/bin/python
+      img: quay.io/pypa/manylinux2014_${{ matrix.arch }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up QEMU
+      id: qemu
+      uses: docker/setup-qemu-action@v1
     - name: Make wheel
       run: |
-            docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
-            ${{ env.img }} \
-            bash -exc '\
-            source .env/bin/activate && \
             git clean -xdf &&
             case "$(python -c 'import sys; print(sys.platform)')" in
             linux)
             PV="$(python -c 'import sys; print("".join(map(str, sys.version_info[:2])))')" &&
             ABI="$(python -c 'import sys; print(sys.abiflags)')" &&
             docker run --interactive --volume="$(pwd)":/io:Z --workdir=/io \
-            quay.io/pypa/manylinux1_x86_64 bash <<EOF
+            quay.io/pypa/manylinux2014_aarch64 bash <<EOF
             /opt/python/cp"$PV"-cp"$PV$ABI"/bin/python setup.py bdist_wheel --verbose &&
             auditwheel --verbose repair --wheel-dir=/io/dist /io/dist/*.whl
             EOF
