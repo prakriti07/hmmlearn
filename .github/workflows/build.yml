@@ -83,7 +83,7 @@ jobs:
           python -m pytest --cov --cov-branch --cov-report=xml && \
           deactivate'
   build_aarch64_wheel:
-    name: "Build on ${{ matrix.pyver }} aarch64"
+    name: "Build wheel on ${{ matrix.pyver }} aarch64"
     strategy:
       matrix:
         pyver: [cp35-cp35m, cp36-cp36m, cp37-cp37m, cp38-cp38, cp39-cp39]
@@ -116,7 +116,6 @@ jobs:
             python setup.py bdist_wheel
             ;;
             esac
-            deactivate'
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
