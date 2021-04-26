@@ -47,3 +47,43 @@ jobs:
       with:
         name: wheels
         path: dist/*.whl
+  build-aarch64:
+    name: "Build on ${{ matrix.pyver }} aarch64"
+    strategy:
+      matrix:
+        pyver: [cp35-cp35m, cp36-cp36m, cp37-cp37m, cp38-cp38, cp39-cp39]
+        arch: [aarch64]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    env:
+      py: /opt/python/${{ matrix.pyver }}/bin/python
+      img: quay.io/pypa/manylinux2014_${{ matrix.arch }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up QEMU
+      id: qemu
+      uses: docker/setup-qemu-action@v1
+    - name: Install
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
+          ${{ env.img }} ${{ env.py }} -m pip install -U  pip setuptools wheel pytest pytest-cov && \
+          ${{ env.py }} -m pip install -ve . && \
+          ${{ env.py }} -m pip list
+    - name: Test
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
+          ${{ env.img }} ${{ env.py }} -m pytest --cov --cov-branch --cov-report=xml
+    - name: Make wheel
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
+          ${{ env.img }} ${{ env.py }} -m build
+    - name: Repair wheel wheel
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
+          ${{ env.img }} auditwheel repair dist/*.whl --wheel-dir wheelhouse/
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: dist
+        path: wheelhouse/*
