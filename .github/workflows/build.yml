@@ -90,21 +90,7 @@ jobs:
           ${{ env.img }} \
           bash -exc '\
           source .env/bin/activate && \
-          git clean -xdf && \
-          case "$(python -c 'import sys; print(sys.platform)')" in
-          linux)
-          PV="$(python -c 'import sys; print("".join(map(str, sys.version_info[:2])))')" &&
-          ABI="$(python -c 'import sys; print(sys.abiflags)')" &&
-          docker run --interactive --volume="$(pwd)":/io:Z --workdir=/io \
-            quay.io/pypa/manylinux2014_aarch64 bash <<EOF
-          /opt/python/cp"$PV"-cp"$PV$ABI"/bin/python setup.py bdist_wheel --verbose &&
-          auditwheel --verbose repair --wheel-dir=/io/dist /io/dist/*.whl
-          EOF
-          ;;
-          *)
-          python setup.py bdist_wheel
-          ;;
-          esac
+          git clean -xdf
         deactivate'
   build_aarch64_wheel:
     name: "Build wheel on ${{ matrix.pyver }} aarch64"
