@@ -91,7 +91,7 @@ jobs:
           bash -exc '\
           source .env/bin/activate && \
           git clean -xdf && \
-          PV="$(python -c 'import sys; print("".join(map(str, sys.version_info[:2])))')" &&
+          export PV="$(python -c 'import sys; print("".join(map(str, sys.version_info[:2])))')" &&
         deactivate'
   build_aarch64_wheel:
     name: "Build wheel on ${{ matrix.pyver }} aarch64"
