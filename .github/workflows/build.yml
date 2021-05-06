@@ -91,7 +91,6 @@ jobs:
           bash -exc '\
           source .env/bin/activate && \
           git clean -xdf && \
-          export PV="$(python -c 'import sys; print("".join(map(str, sys.version_info[:2])))')" && \
           export ABI="$(python -c 'import sys; print(sys.abiflags)')" && \
           echo $PV
           echo $ABI
